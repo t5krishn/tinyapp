@@ -8,7 +8,7 @@ const PORT = 8080; // default port 8080
 app.set('view engine', 'ejs');
 
 
-function generateRandomString() {
+const generateRandomString = function() {
   return Math.random().toString(36).substr(2, 6);
 }
 
@@ -47,7 +47,18 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body.longURL);
-  let templateVars = {urls: urlDatabase};
-  res.send('Ok');
+  const newID = generateRandomString();
+  urlDatabase[newID] = req.body.longURL;
+  res.redirect(`/urls/${newID}`);
 });
+
+
+app.get("/u/:shortURL", (req, res) => {
+  if(urlDatabase[req.params.shortURL]){
+    res.redirect(urlDatabase[req.params.shortURL]);
+  } else {
+    res.send('URL not found. Create a new one pls');
+  }
+});
+
 
