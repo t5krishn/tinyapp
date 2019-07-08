@@ -1,0 +1,12 @@
+{
+  "name": "tinyApp",
+  "version": "1.0.0",
+  "description": "TinyApp, Lighthouse Labs Project #2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Thilina Krishnanand",
+  "license": "ISC"
+}
