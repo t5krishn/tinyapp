@@ -45,7 +45,12 @@ const users = {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  let templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies["user_id"]]
+  };
+  // console.log(users[req.cookies["user_id"]]);
+  res.render('urls_login', templateVars);
 });
 
 app.listen(PORT, () => {
@@ -69,7 +74,13 @@ app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: (req.cookies)? users[req.cookies["user_id"]] : undefined,
   };
-  res.render("urls_new", templateVars);
+  console.log(req.cookies);
+  if (Object.keys(req.cookies).length === 0) {
+    res.render("urls_login", templateVars);
+  } else {
+    res.render("urls_new", templateVars);
+  }
+  
 });
 
 app.get("/urls/:shortURL", (req, res) => {
