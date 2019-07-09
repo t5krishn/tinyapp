@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 var cookieParser = require('cookie-parser')
 
+const inUser = require('./helper/inUser');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -22,6 +23,27 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+class User {
+  constructor(email, password){
+    this.id = generateRandomString();
+    this.email = email;
+    this.password = password;
+  }
+};
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -37,7 +59,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["user"],
+    user_id: users,
   };
   res.render('urls_index', templateVars);
 });
@@ -95,7 +117,25 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
+app.get("/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["user"],
+  };
+  res.render('urls_register', templateVars);
+});
+
 app.post("/register", (req, res) => {
-  res.clearCookie('user');
-  res.redirect('/urls');
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400);
+    res.render('Invalid email or password');
+  } else if (inUser(users, req.body.email)) {
+    res.status(400);
+    res.render('Email already registered');
+  } else {
+    const usr = new User (req.body.email, req.body.password);
+    users[usr.id] = usr;
+    res.cookie("user_id", usr.id);
+    // console.log(usr);
+    res.redirect('/urls');
+  }
 });
