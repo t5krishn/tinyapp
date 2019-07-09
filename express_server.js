@@ -59,14 +59,15 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    user_id: users,
+    user: users[req.cookies["user_id"]]
   };
+  // console.log(users[req.cookies["user_id"]]);
   res.render('urls_index', templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["user"],
+    user: (req.cookies)? users[req.cookies["user_id"]] : undefined,
   };
   res.render("urls_new", templateVars);
 });
@@ -75,7 +76,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
     longURL:  urlDatabase[req.params.shortURL],
-    username: req.cookies["user"],
+    user: (req.cookies)? users[req.cookies["user_id"]] : undefined,
   };
   res.render('urls_show', templateVars);
 });
@@ -87,7 +88,6 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newID}`);
 });
 
-
 app.get("/u/:shortURL", (req, res) => {
   if(urlDatabase[req.params.shortURL]){
     res.redirect(urlDatabase[req.params.shortURL]);
@@ -95,7 +95,6 @@ app.get("/u/:shortURL", (req, res) => {
     res.send('URL not found. Create a new one pls');
   }
 });
-
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
@@ -108,18 +107,29 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('user',req.body.username);
-  res.redirect('/urls');
+  const usr = inUser(users, req.body.email)
+  // console.log(users[usr);
+  // console.log(req.body.password);
+  if (!usr) {
+    res.status(403);
+    res.send('Invalid email');
+  } else if (users[usr].password !== req.body.password) {
+    res.status(403);
+    res.send('Invalid password');
+  } else {
+    res.cookie("user_id", usr);
+    res.redirect('/urls');
+  }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('user');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["user"],
+    user: (req.cookies)? users[req.cookies["user_id"]] : undefined,
   };
   res.render('urls_register', templateVars);
 });
@@ -127,15 +137,21 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     res.status(400);
-    res.render('Invalid email or password');
+    res.send('Invalid email or password');
   } else if (inUser(users, req.body.email)) {
     res.status(400);
-    res.render('Email already registered');
+    res.send('Email already registered');
   } else {
     const usr = new User (req.body.email, req.body.password);
     users[usr.id] = usr;
     res.cookie("user_id", usr.id);
-    // console.log(usr);
     res.redirect('/urls');
   }
+});
+
+app.get("/login", (req, res) => {
+  let templateVars = {
+    user: (req.cookies)? users[req.cookies["user_id"]] : undefined,
+  };
+  res.render('urls_login', templateVars);
 });
