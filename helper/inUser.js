@@ -1,7 +1,7 @@
 const inUser = function(users, email) {
   for (user in users) {
-    if (user.email === email) {
-      return true
+    if (users[user].email === email) {
+      return user;
     }
   }
   return false;
