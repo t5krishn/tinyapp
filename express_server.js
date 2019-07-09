@@ -94,3 +94,8 @@ app.post("/logout", (req, res) => {
   res.clearCookie('user');
   res.redirect('/urls');
 });
+
+app.post("/register", (req, res) => {
+  res.clearCookie('user');
+  res.redirect('/urls');
+});
