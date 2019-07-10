@@ -1,4 +1,4 @@
-const inUser = function(users, email) {
+const getUserByEmail = function(users, email) {
   for (let user in users) {
     if (users[user].email === email) {
       return user;
@@ -24,4 +24,4 @@ const generateRandomString = function() {
 
 
 
-module.exports = { inUser, urlsForUser, generateRandomString};
+module.exports = { getUserByEmail, urlsForUser, generateRandomString};
