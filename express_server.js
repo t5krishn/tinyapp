@@ -5,7 +5,8 @@
 // Modules required by server
 const express = require("express");
 const bodyParser = require("body-parser");
-var cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser')
+const bcrypt = require("bcrypt");
 
 // Helper functions from helper.js
 const { inUser, urlsForUser, generateRandomString } = require('./helper');
@@ -53,12 +54,12 @@ const users = {
   "aJ48lW": {
     id: "aJ48lW", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "$2b$10$jvJIrAiTCwNwMZCVT7D0rONFDB2jvQ/EtyI42AY.XbutcA5I429Ey" //purple-monkey-dinosaur
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: "$2b$10$rfj/5wpPtMRpH2ZZ0VCZjO3e1eODRGP.QKKyv9kQPVB5hecwYkXDu"//dishwasher-funk
   }
 };
 
@@ -178,7 +179,7 @@ app.post("/login", (req, res) => {
   if (!usr) {
     res.status(403);
     res.send('Invalid email');
-  } else if (users[usr].password !== req.body.password) {
+  } else if (!bcrypt.compareSync(req.body.password, users[usr].password)) {
     res.status(403);
     res.send('Invalid password');
   } else {
@@ -207,10 +208,12 @@ app.post("/register", (req, res) => {
     res.status(400);
     res.send('Email already registered');
   } else {
-    const usr = new User (req.body.email, req.body.password);
+    const hashedPassword = bcrypt.hashSync(req.body.password,10) //Salt rounds of 10 
+    const usr = new User (req.body.email, hashedPassword);
     users[usr.id] = usr;
     res.cookie("user_id", usr.id);
     res.redirect('/urls');
+    console.log(users);
   }
 });
 
