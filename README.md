@@ -6,8 +6,8 @@ TinyApp is a web application built with Node and Express that allows users to sh
 ## Final Product
 
 !["Screenshot of List of URLs"](https://github.com/t5krishn/tinyapp/blob/master/docs/urls_page.png?raw=true)
-!["Screenshot of Create a URL page"](https://github.com/t5krishn/tinyapp/blob/master/docs/create_url_page.png?raw=true)
 !["Screenshot of a Specific URL page"](https://github.com/t5krishn/tinyapp/blob/master/docs/specific_url_page.png?raw=true)
+!["Screenshot of Create a URL page"](https://github.com/t5krishn/tinyapp/blob/master/docs/create_url_page.png?raw=true)
 
 ## Dependencies
 
