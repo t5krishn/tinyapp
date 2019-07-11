@@ -7,6 +7,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require("bcrypt");
+const methodOverride = require('method-override')
+
 
 // Helper functions from helper.js
 const { getUserByEmail, urlsForUser, generateRandomString } = require('./helper');
@@ -18,12 +20,13 @@ const PORT = 8080; // default port 8080
 // set the view engine to ejs
 app.set('view engine', 'ejs');
 
-// Middleware to parse request.body and request.cookies
+// Middleware to parse request.body, request.cookies and method override
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
+app.use(methodOverride('_method'));
 
 
 // Previous data structure of urlDatabase, left for reference if needed
@@ -72,7 +75,7 @@ const users = {
 //----------------------------------------------------------//
 //                 - ROUTES FOR TINYAPP -                   //
 //----------------------------------------------------------//
-//         - GET -            |           - POST -          //
+//         - GET -            |           - PUT -           //
 //----------------------------|-----------------------------//
 //        /                   |    /urls                    //
 //        /urls               |    /urls/:shortURL/delete   //
@@ -83,6 +86,10 @@ const users = {
 //        /u/:shortURL        |-----------------------------//
 //----------------------------------------------------------//
 
+
+// --------------------------------------------------------------------------------
+//                            GET PATHS
+// --------------------------------------------------------------------------------
 
 app.get("/", (req, res) => {
   if (req.session["user_id"]) {
@@ -108,7 +115,6 @@ app.get("/urls", (req, res) => {
 });
 
 
-
 app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: (req.session["user_id"]) ? users[req.session["user_id"]] : undefined,
@@ -129,14 +135,15 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render('urls_show', templateVars);
 });
 
-// POST for creating a new link object in urlDatabase
-app.post("/urls", (req, res) => {
-  const newID = generateRandomString();
-  urlDatabase[newID] = {
-    longURL: req.body.longURL,
-    userID: req.session["user_id"]
-  };
-  res.redirect(`/urls/${newID}`);
+app.get("/register", (req, res) => {
+  if (req.session["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      user: (req.session["user_id"]),
+    };
+    res.render('urls_register', templateVars);
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -147,7 +154,23 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.get("/login", (req, res) => {
+  if (req.session["user_id"]) {
+    res.redirect("/urls");
+  } else {
+    let templateVars = {
+      user: users[req.session["user_id"]],
+    };
+    res.render('urls_login', templateVars);
+  }
+});
+
+
+// --------------------------------------------------------------------------------
+//                            DELETE PATHS
+// --------------------------------------------------------------------------------
+
+app.delete("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     if (req.session["user_id"] === urlDatabase[req.params.shortURL].userID) {
       delete urlDatabase[req.params.shortURL];
@@ -160,46 +183,37 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-app.post("/urls/:shortURL", (req, res) => {
-  if (req.session["user_id"] === urlDatabase[req.params.shortURL].userID) {
-    urlDatabase[req.params.shortURL] = req.body.longURL;
-    res.redirect(`/urls`);
-  } else {
-    res.send("Not a url you can edit");
-  }
-});
 
-app.post("/login", (req, res) => {
+// --------------------------------------------------------------------------------
+//                            PUT PATHS
+// --------------------------------------------------------------------------------
+
+app.put("/login", (req, res) => {
   const usr = getUserByEmail(users, req.body.email);
   if (!usr) {
+    console.log("Reach?");
     res.status(403);
     res.send('Invalid email');
-  } else if (!bcrypt.compareSync(req.body.password, users[usr].password)) {
+  } else if (bcrypt.compareSync(req.body.password, users[usr].password)) {
+    req.session["user_id"] =  usr;
+    res.redirect('/urls');
+  } else {
     res.status(403);
     res.send('Invalid password');
-  } else {
-    res.cookie("user_id", usr);
-    res.redirect('/urls');
   }
 });
 
-app.post("/logout", (req, res) => {
-  req.session = null;
-  res.redirect('/urls');
+// PUT for creating a new link object in urlDatabase
+app.put("/urls", (req, res) => {
+  const newID = generateRandomString();
+  urlDatabase[newID] = {
+    longURL: req.body.longURL,
+    userID: req.session["user_id"]
+  };
+  res.redirect(`/urls/${newID}`);
 });
 
-app.get("/register", (req, res) => {
-  if (req.session["user_id"]) {
-    res.redirect("/urls");
-  } else {
-    let templateVars = {
-      user: (req.session["user_id"]),
-    };
-    res.render('urls_register', templateVars);
-  }
-});
-
-app.post("/register", (req, res) => {
+app.put("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     res.status(400);
     res.send('Invalid email or password');
@@ -215,16 +229,29 @@ app.post("/register", (req, res) => {
   }
 });
 
-app.get("/login", (req, res) => {
-  if (req.session["user_id"]) {
-    res.redirect("/urls");
+
+app.put("/urls/:shortURL", (req, res) => {
+  if (req.session["user_id"] === urlDatabase[req.params.shortURL].userID) {
+    urlDatabase[req.params.shortURL] = req.body.longURL;
+    res.redirect(`/urls`);
   } else {
-    let templateVars = {
-      user: users[req.session["user_id"]],
-    };
-    res.render('urls_login', templateVars);
+    res.send("Not a url you can edit");
   }
 });
+
+app.put("/logout", (req, res) => {
+  req.session = null;
+  res.redirect('/urls');
+});
+
+
+
+
+
+
+// --------------------------------------------------------------------------------
+//                                APP LISTENING
+// --------------------------------------------------------------------------------
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

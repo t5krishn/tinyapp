@@ -1,33 +1,28 @@
 <header>
-  <nav class="navbar navbar-expand-md navbar-dark bg-success">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
+  <nav class="navbar navbar-expand-md navbar-dark bg-success" style="background:linear-gradient(to bottom, #3333ff 0%, #ff3399 100%);">
+    <a class="navbar-brand text-light" style="text-shadow: 1px 1px 2px black;" href="/urls">TinyApp</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" style="position:relative;" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link p-3" href="/urls">My URLs</a>
-        <a class="nav-item nav-link p-3" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link p-3 text-white" style="text-shadow: 1px 1px 2px black;" href="/urls">My URLs</a>
+        <a class="nav-item nav-link p-3 text-white" style="text-shadow: 1px 1px 2px black;" href="/urls/new">Create New URL</a>
       
         <% if (!user) { %>
           
         <div class="form-group nav-link clearfix">
-          <form class="form-inline pl-3" action="/login" style="position:absolute; right:0" method="GET">
-              <!-- <label for="username" class="ml-1" style>Login:</label> -->
-              <!-- <input class="form-control ml-1" type="text" name="username" placeholder="Username" style="width: 150px;"> -->
-            <button type="submit" class="btn btn-outline-dark ml-1">Sign in</button>
+          <form class="form-inline pl-3" action="/register" style="position:absolute; right: 0%" method="GET">
+            <button type="submit" class="btn btn-outline-light" style="text-shadow: 1px 1px 2px black;">Register</button>
           </form>
-          <form class="form-inline pl-3" action="/register" style="position:absolute; right: 11%" method="GET">
-            <!-- <div class="form-group nav-link clearfix"> -->
-              <!-- <label for="username" class="ml-1" style>Login:</label> -->
-              <!-- <input class="form-control ml-1" type="text" name="username" placeholder="Username" style="width: 150px;"> -->
-            <button type="submit" class="btn btn-outline-dark">Register</button>
-              <!-- </div> -->
+
+          <form class="form-inline pl-3" action="/login" style="position:absolute; right:7%" method="GET">
+            <button type="submit" class="btn btn-outline-light" style="text-shadow: 1px 1px 2px black;">Sign in</button>
           </form>
         </div>
             
         <% } else { %>
-          <form class="form-inline ml-auto pl-3" action="/logout" style="position:absolute; right:0" method="POST">
+          <form class="form-inline ml-auto pl-3" action="/logout?_method=PUT" style="position:absolute; right:0" method="POST">
             <div class="form-group nav-link clearfix">
               <label for="logout" class="ml-1 text-dark" style>User: <%= user.email %></label>
               <button type="submit" name="logout" class="btn btn-outline-dark ml-1">Logout</button>
