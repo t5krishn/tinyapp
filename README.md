@@ -10,14 +10,17 @@ TinyApp is a web application built with Node and Express that allows users to sh
 
 ## Dependencies
 
-- Node.js
-- Express
-- EJS
-- bcrypt
-- body-parser
-- cookie-session
+- Node.js: v8.9.4
+- Express: ^4.17.1
+- EJS: ^2.6.2
+- bcrypt: 2.0.0
+- body-parser: ^1.19.0
+- cookie-session: ^1.3.3
+- method-override: ^3.0.0
 
 ## Getting Started
 
 - Install all dependencies (using the `npm install` command).
-- Run the development web server using the `node express_server.js` command.
+- Run the development web server using the `node express_server.js` command
+- Open up your favourtie browser and head over to : [http://localhost:8080/login](http://localhost:8080/)
+- Enjoy your very own TinyApp
