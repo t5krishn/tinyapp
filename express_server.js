@@ -67,19 +67,19 @@ const users = {
 
 
 
-//----------------------------------------------------------------------------------------//
-//                                 - ROUTES FOR TINYAPP -                                 //
-//----------------------------------------------------------------------------------------//
-//         - GET -            |           - PUT -           |           - POST -          //
-//----------------------------|-----------------------------|-----------------------------//
-//        /                   |    /urls                    |    /urls                    //
-//        /urls               |    /urls/:shortURL/delete   |    /urls/:shortURL/delete   //
-//        /urls/new           |    /logout                  |    /logout                  //
-//        /urls/:shortURL     |    /urls/:shortURL          |    /urls/:shortURL          //
-//        /login              |    /login                   |    /login                   //
-//        /register           |    /register                |    /register                //
-//        /u/:shortURL        |                             |                             //
-//----------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------//
+//                             - ROUTES FOR TINYAPP -                                   //
+//--------------------------------------------------------------------------------------//
+//   - GET -         |      - POST -       |    - PUT -      |       - DELETE -         //
+//-------------------|---------------------|-----------------|--------------------------//
+//  /                |  /urls              |                 |                          //
+//  /urls            |                     |                 |                          //
+//  /urls/new        |  /logout            |                 |                          //
+//  /urls/:shortURL  |  /urls/:shortURL    | /urls/:shortURL |  /urls/:shortURL/delete  //
+//  /login           |  /login             |                 |                          //
+//  /register        |  /register          |                 |                          //
+//  /u/:shortURL     |                     |                 |                          //
+//--------------------------------------------------------------------------------------//
 
 
 // --------------------------------------------------------------------------------//
@@ -112,7 +112,7 @@ app.get('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   if (req.session['user_id'] && users[req.session['user_id'] ]) {
     let templateVars = {
-      user: (req.session['user_id']) ? users[req.session['user_id']] : undefined,
+      user: users[req.session['user_id']],
     };
     res.render('urls_new', templateVars);
   } else {
@@ -121,29 +121,26 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  if (req.session['user_id'] && users[req.session['user_id'] ]) {
-
-    let templateVars = {
-      shortURL: req.params.shortURL,
-      longURL:  urlDatabase[req.params.shortURL].longURL,
-      user: (req.session['user_id']) ? users[req.session['user_id']] : undefined,
-    };
-    res.render('urls_show', templateVars);
+  if (req.session['user_id'] && users[req.session['user_id']]) {
+    if (urlDatabase[req.params.shortURL]) {
+      if (req.session['user_id'] === urlDatabase[req.params.shortURL].userID) {
+        let templateVars = {
+          shortURL: req.params.shortURL,
+          url:  urlDatabase[req.params.shortURL],
+          user: users[req.session['user_id']],
+        };
+        res.render('urls_show', templateVars);
+      } else {
+        // USER DID NOT CREATE SO CANT GO TO EDIT PAGE
+      }
+    } else {
+      // URL IS NOT IN DATABASE
+    }
   } else {
-    
+    // USER IS NOT LOGGED IN
   }
 });
 
-app.get('/register', (req, res) => {
-  if (req.session['user_id'] && users[req.session['user_id'] ]) {
-    res.redirect('/urls');
-  } else {
-    let templateVars = {
-      user: (req.session['user_id']),
-    };
-    res.render('urls_register', templateVars);
-  }
-});
 
 app.get('/u/:shortURL', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
@@ -165,41 +162,78 @@ app.get('/u/:shortURL', (req, res) => {
   }
 });
 
+
+app.get('/register', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+    res.redirect('/urls');
+  } else {
+    let templateVars = {
+      user: undefined,
+    };
+    res.render('urls_register', templateVars);
+  }
+});
+
+
 app.get('/login', (req, res) => {
   if (req.session['user_id'] && users[req.session['user_id'] ]) {
     res.redirect('/urls');
   } else {
     let templateVars = {
-      user: users[req.session['user_id']],
+      user:undefined,
     };
     res.render('urls_login', templateVars);
   }
 });
 
 
-// --------------------------------------------------------------------------------
-//                            DELETE PATHS
-// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------//
+//                            DELETE PATHS                                         //
+// --------------------------------------------------------------------------------//
 
 app.delete('/urls/:shortURL/delete', (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    if (req.session['user_id'] === urlDatabase[req.params.shortURL].userID) {
-      delete urlDatabase[req.params.shortURL];
-      res.redirect(`/urls`);
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+    if (urlDatabase[req.params.shortURL]) {
+      if (req.session['user_id'] === urlDatabase[req.params.shortURL].userID) {
+        delete urlDatabase[req.params.shortURL];
+        res.redirect(`/urls`);
+      } else {
+        res.send('Not a url you can delete');// NOT YOUR URL TO DELETE
+      }
     } else {
-      res.send('Not a url you can delete');
+      res.send('URL cannot be deleted'); //URL DOES NOT EXIST
     }
   } else {
-    res.send('URL cannot be deleted');
+    // NOT LOGGED IN
   }
 });
 
 
-// --------------------------------------------------------------------------------
-//                            PUT PATHS
-// --------------------------------------------------------------------------------
 
-app.put('/login', (req, res) => {
+
+// --------------------------------------------------------------------------------//
+//                            PUT PATHS                                            //
+// --------------------------------------------------------------------------------//
+
+app.put('/urls/:shortURL', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+    if (req.session['user_id'] === urlDatabase[req.params.shortURL].userID) {
+      urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+      res.redirect(`/urls`);
+    } else {
+      res.send('Not a url you can edit'); // USER CANNOT EDIT THIS URL
+    }
+  } else {
+    // user not signed in
+  }
+});
+
+// --------------------------------------------------------------------------------//
+//                            POST PATHS                                           //
+// --------------------------------------------------------------------------------//
+
+
+app.post('/login', (req, res) => {
   const usr = getUserByEmail(users, req.body.email);
   if (!usr) {
     res.status(403);
@@ -213,18 +247,22 @@ app.put('/login', (req, res) => {
   }
 });
 
-// PUT for creating a new link object in urlDatabase
-app.put('/urls', (req, res) => {
-  const newID = generateRandomString();
-  urlDatabase[newID] = new URL(req.body.longURL, req.session['user_id']);
-  res.redirect(`/urls/${newID}`);
+// POST for creating a new link object in urlDatabase
+app.post('/urls', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+    const newID = generateRandomString();
+    urlDatabase[newID] = new URL(req.body.longURL, req.session['user_id']);
+    res.redirect(`/urls/${newID}`);
+  } else {
+    // NOT SIGNED IN, CANNOT CREATE NEW URLS
+  }
 });
 
-app.put('/register', (req, res) => {
+app.post('/register', (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
     res.status(400);
-    res.send('Invalid email or password');
-  } else if (getUserByEmail(users, req.body.email)) {
+    res.send('Empty email or password');
+  } else if (getUserByEmail(users, req.body.email)) { 
     res.status(400);
     res.send('Email already registered');
   } else {
@@ -237,24 +275,12 @@ app.put('/register', (req, res) => {
 });
 
 
-app.put('/urls/:shortURL', (req, res) => {
-  if (req.session['user_id'] === urlDatabase[req.params.shortURL].userID) {
-    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-    res.redirect(`/urls`);
-  } else {
-    res.send('Not a url you can edit');
-  }
-});
 
-app.put('/logout', (req, res) => {
+
+app.post('/logout', (req, res) => {
   req.session["user_id"] = null;
   res.redirect('/urls');
 });
-
-
-
-
-
 
 // --------------------------------------------------------------------------------
 //                                APP LISTENING
