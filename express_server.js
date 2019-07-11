@@ -191,7 +191,6 @@ app.delete("/urls/:shortURL/delete", (req, res) => {
 app.put("/login", (req, res) => {
   const usr = getUserByEmail(users, req.body.email);
   if (!usr) {
-    console.log("Reach?");
     res.status(403);
     res.send('Invalid email');
   } else if (bcrypt.compareSync(req.body.password, users[usr].password)) {
