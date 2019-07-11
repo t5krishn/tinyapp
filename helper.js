@@ -12,11 +12,12 @@ const urlsForUser = function(urlDb, id) {
   const result = {};
   for (let url in urlDb) {
     if (urlDb[url].userID === id) {
-      result[url] = urlDb[url].longURL;
+      result[url] = urlDb[url];
     }
   }
   return result;
 };
+
 
 const generateRandomString = function() {
   return Math.random().toString(36).substr(2, 6);
