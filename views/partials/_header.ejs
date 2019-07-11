@@ -22,7 +22,7 @@
         </div>
             
         <% } else { %>
-          <form class="form-inline ml-auto pl-3" action="/logout?_method=PUT" style="position:absolute; right:0" method="POST">
+          <form class="form-inline ml-auto pl-3" action="/logout" style="position:absolute; right:0" method="POST">
             <div class="form-group nav-link clearfix">
               <label for="logout" class="ml-1 text-dark" style>User: <%= user.email %></label>
               <button type="submit" name="logout" class="btn btn-outline-dark ml-1">Logout</button>
