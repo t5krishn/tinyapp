@@ -103,8 +103,14 @@ app.get('/urls', (req, res) => {
     };
     res.render('urls_index', templateVars);
   } else {
-    // res.send('Not signed in, go login or register');
-    res.redirect('/login');
+    let templateVars = {
+      err : {
+        title : "User Not Signed In",
+        description : "Please sign in or register to access this page"
+      },
+      user : undefined
+    };
+    res.render('error', templateVars);
   }
 });
 
@@ -132,12 +138,36 @@ app.get('/urls/:shortURL', (req, res) => {
         res.render('urls_show', templateVars);
       } else {
         // USER DID NOT CREATE SO CANT GO TO EDIT PAGE
+        let templateVars = {
+          err : {
+            title : "No Access to URL",
+            description : "This URL is not created by you, please create one or try with one you have created"
+          },
+          user : undefined
+        };
+        res.render('error', templateVars);
       }
     } else {
       // URL IS NOT IN DATABASE
+      let templateVars = {
+        err : {
+          title : "URL Not In Database",
+          description : "This URL is not in our database, please create one or try with a different one"
+        },
+        user : undefined
+      };
+      res.render('error', templateVars);
     }
   } else {
     // USER IS NOT LOGGED IN
+    let templateVars = {
+      err : {
+        title : "User Not Signed In",
+        description : "Please sign in or register to access this page"
+      },
+      user : undefined
+    };
+    res.render('error', templateVars);
   }
 });
 
@@ -155,10 +185,17 @@ app.get('/u/:shortURL', (req, res) => {
       urlDatabase[req.params.shortURL].addVisit(newID, new Date);
       console.log("new", urlDatabase[req.params.shortURL]);
       res.redirect(urlDatabase[req.params.shortURL].longURL);
-
     }
   } else {
-    res.send('URL not found. Create a new one pls');
+    // URL NOT IN DATABASE
+    let templateVars = {
+      err : {
+        title : "Invalid URL",
+        description : "This URL is not in our database. Please create a new URL or try another"
+      },
+      user : undefined
+    };
+    res.render('error', templateVars);
   }
 });
 
@@ -198,13 +235,37 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
         delete urlDatabase[req.params.shortURL];
         res.redirect(`/urls`);
       } else {
-        res.send('Not a url you can delete');// NOT YOUR URL TO DELETE
+        // NOT YOUR URL TO DELETE
+        let templateVars = {
+          err : {
+            title : "No Access to URL",
+            description : "URL was created by another user. Cannot delete this URL."
+          },
+          user : undefined
+        };
+        res.render('error', templateVars);
       }
     } else {
-      res.send('URL cannot be deleted'); //URL DOES NOT EXIST
+      //URL DOES NOT EXIST
+      let templateVars = {
+        err : {
+          title : "Invalid URL",
+          description : "URL does not exist in our database, please try with another URL."
+        }, 
+        user : undefined
+      };
+      res.render('error', templateVars);
     }
   } else {
     // NOT LOGGED IN
+    let templateVars = {
+      err : {
+        title : "User Not Signed In",
+        description : "Please sign in or register to access this page"
+      }, 
+      user : undefined
+    };
+    res.render('error', templateVars);
   }
 });
 
@@ -221,29 +282,60 @@ app.put('/urls/:shortURL', (req, res) => {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
       res.redirect(`/urls`);
     } else {
-      res.send('Not a url you can edit'); // USER CANNOT EDIT THIS URL
+      // USER CANNOT EDIT THIS URL
+      let templateVars = {
+        err : {
+          title : "No Access to URL",
+          description : "URL was created by another user. Cannot delete this URL."
+        }, 
+        user : undefined
+      };
+      res.render('error', templateVars);
     }
   } else {
     // user not signed in
+    let templateVars = {
+      err : {
+        title : "User Not Signed In",
+        description : "Please sign in or register to access this page"
+      }, 
+      user : undefined
+    };
+    res.render('error', templateVars);
   }
 });
+
+
 
 // --------------------------------------------------------------------------------//
 //                            POST PATHS                                           //
 // --------------------------------------------------------------------------------//
 
-
 app.post('/login', (req, res) => {
   const usr = getUserByEmail(users, req.body.email);
   if (!usr) {
     res.status(403);
-    res.send('Invalid email');
+    let templateVars = {
+      err : {
+        title : "Invalid Email",
+        description : "Email is not present in our database. Try again or register a new account"
+      }, 
+      user : undefined
+    };
+    res.render('error', templateVars);
   } else if (bcrypt.compareSync(req.body.password, users[usr].password)) {
     req.session['user_id'] =  usr;
     res.redirect('/urls');
   } else {
     res.status(403);
-    res.send('Invalid password');
+    let templateVars = {
+      err : {
+        title : "Invalid Password",
+        description : "Password is incorrect. Try again"
+      }, 
+      user : undefined
+    };
+    res.render('error', templateVars);
   }
 });
 
@@ -255,16 +347,38 @@ app.post('/urls', (req, res) => {
     res.redirect(`/urls/${newID}`);
   } else {
     // NOT SIGNED IN, CANNOT CREATE NEW URLS
+    let templateVars = {
+      err : {
+        title : "User Not Signed In",
+        description : "Please sign in or register to access this page"
+      }, 
+      user : undefined
+    };
+    res.render('error', templateVars);
   }
 });
 
 app.post('/register', (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
     res.status(400);
-    res.send('Empty email or password');
+    let templateVars = {
+      err : {
+        title : "Invaid Input",
+        description : "Email or password is invalid. Try again."
+      }, 
+      user : undefined
+    };
+    res.render('error', templateVars);
   } else if (getUserByEmail(users, req.body.email)) { 
     res.status(400);
-    res.send('Email already registered');
+    let templateVars = {
+      err : {
+        title : "Invalid Email",
+        description : "Email is already in our database. Login or register another account."
+      }, 
+      user : undefined
+    };
+    res.render('error', templateVars);
   } else {
     const hashedPassword = bcrypt.hashSync(req.body.password,10); //Salt rounds of 10
     const usr = new User(req.body.email, hashedPassword);
@@ -273,8 +387,6 @@ app.post('/register', (req, res) => {
     res.redirect('/urls');
   }
 });
-
-
 
 
 app.post('/logout', (req, res) => {
