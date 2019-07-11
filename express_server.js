@@ -3,15 +3,17 @@
 // Main server file that should be run
 
 // Modules required by server
-const express = require("express");
-const bodyParser = require("body-parser");
+const express = require('express');
+const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
-const bcrypt = require("bcrypt");
-const methodOverride = require('method-override')
-
+const bcrypt = require('bcrypt');
+const methodOverride = require('method-override');
 
 // Helper functions from helper.js
 const { getUserByEmail, urlsForUser, generateRandomString } = require('./helper');
+
+// Class Definition imports
+const { User, Visitor, URL } = require('./classes');
 
 // Initializing app with port
 const app = express();
@@ -29,137 +31,146 @@ app.use(cookieSession({
 app.use(methodOverride('_method'));
 
 
-// Previous data structure of urlDatabase, left for reference if needed
+// --------------------------------------------------------------------------------
+//                            DATABASES INITIALIZED
+// --------------------------------------------------------------------------------
+
+
+// Previous data structure of urlDatabase, left for reference if needed 
 // const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
+//   'b2xVn2': 'http://www.lighthouselabs.ca',
+//   '9sm5xK': 'http://www.google.com'
 // };
-
-// Class used to create URLS
-// class URL {
-
-// }
 
 // New data structure of urlDatabase with userID's added
 const urlDatabase = {
-  sgq3y6: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" },
-  as34aa: { longURL: "https://www.facebok.ca", userID: "asdasd" }
+  sgq3y6: new URL('https://www.tsn.ca', 'aJ48lW'),
+  i3BoGr: new URL('https://www.google.ca', 'aJ48lW'),
+  as34aa: new URL('https://www.facebok.ca', 'asdasd'),
 };
 
-// Class used to create new Users
-class User {
-  constructor(email, password) {
-    this.id = generateRandomString();
-    this.email = email;
-    this.password = password;
-  }
-}
 
-
-// Object for storing all users registered
+//USERs Database for storing all users registered
 const users = {
-  "aJ48lW": {
-    id: "aJ48lW",
-    email: "user@example.com",
-    password: "$2b$10$jvJIrAiTCwNwMZCVT7D0rONFDB2jvQ/EtyI42AY.XbutcA5I429Ey" //purple-monkey-dinosaur
+  'aJ48lW': {
+    id: 'aJ48lW',
+    email: 'user@example.com',
+    password: '$2b$10$jvJIrAiTCwNwMZCVT7D0rONFDB2jvQ/EtyI42AY.XbutcA5I429Ey' //purple-monkey-dinosaur
   },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "$2b$10$rfj/5wpPtMRpH2ZZ0VCZjO3e1eODRGP.QKKyv9kQPVB5hecwYkXDu"//dishwasher-funk
+  'user2RandomID': {
+    id: 'user2RandomID',
+    email: 'user2@example.com',
+    password: '$2b$10$rfj/5wpPtMRpH2ZZ0VCZjO3e1eODRGP.QKKyv9kQPVB5hecwYkXDu'//dishwasher-funk
   }
 };
 
 
-//----------------------------------------------------------//
-//                 - ROUTES FOR TINYAPP -                   //
-//----------------------------------------------------------//
-//         - GET -            |           - PUT -           //
-//----------------------------|-----------------------------//
-//        /                   |    /urls                    //
-//        /urls               |    /urls/:shortURL/delete   //
-//        /urls/new           |    /logout                  //
-//        /urls/:shortURL     |    /urls/:shortURL          //
-//        /login              |    /login                   //
-//        /register           |    /register                //
-//        /u/:shortURL        |-----------------------------//
-//----------------------------------------------------------//
 
 
-// --------------------------------------------------------------------------------
-//                            GET PATHS
-// --------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------//
+//                                 - ROUTES FOR TINYAPP -                                 //
+//----------------------------------------------------------------------------------------//
+//         - GET -            |           - PUT -           |           - POST -          //
+//----------------------------|-----------------------------|-----------------------------//
+//        /                   |    /urls                    |    /urls                    //
+//        /urls               |    /urls/:shortURL/delete   |    /urls/:shortURL/delete   //
+//        /urls/new           |    /logout                  |    /logout                  //
+//        /urls/:shortURL     |    /urls/:shortURL          |    /urls/:shortURL          //
+//        /login              |    /login                   |    /login                   //
+//        /register           |    /register                |    /register                //
+//        /u/:shortURL        |                             |                             //
+//----------------------------------------------------------------------------------------//
 
-app.get("/", (req, res) => {
-  if (req.session["user_id"]) {
-    // res.status(300)
+
+// --------------------------------------------------------------------------------//
+//                            GET PATHS                                            //
+// --------------------------------------------------------------------------------//
+
+app.get('/', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
     res.redirect('/urls');
   } else {
     res.redirect('/login');
   }
 });
 
-app.get("/urls", (req, res) => {
 
-  if (req.session["user_id"]) {
+app.get('/urls', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
     let templateVars = {
-      urls: urlsForUser(urlDatabase, req.session["user_id"]),
-      user: users[req.session["user_id"]]
+      urls: urlsForUser(urlDatabase, req.session['user_id']),
+      user: users[req.session['user_id']]
     };
     res.render('urls_index', templateVars);
   } else {
-    // res.send("Not signed in, go login or register");
-    res.redirect("/login");
+    // res.send('Not signed in, go login or register');
+    res.redirect('/login');
   }
 });
 
 
-app.get("/urls/new", (req, res) => {
-  let templateVars = {
-    user: (req.session["user_id"]) ? users[req.session["user_id"]] : undefined,
-  };
-  if (req.session["user_id"]) {
-    res.render("urls_new", templateVars);
+app.get('/urls/new', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+    let templateVars = {
+      user: (req.session['user_id']) ? users[req.session['user_id']] : undefined,
+    };
+    res.render('urls_new', templateVars);
   } else {
-    res.render("urls_login", templateVars);
+    res.redirect('/login');
   }
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {
-    shortURL: req.params.shortURL,
-    longURL:  urlDatabase[req.params.shortURL].longURL,
-    user: (req.session["user_id"]) ? users[req.session["user_id"]] : undefined,
-  };
-  res.render('urls_show', templateVars);
+app.get('/urls/:shortURL', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+
+    let templateVars = {
+      shortURL: req.params.shortURL,
+      longURL:  urlDatabase[req.params.shortURL].longURL,
+      user: (req.session['user_id']) ? users[req.session['user_id']] : undefined,
+    };
+    res.render('urls_show', templateVars);
+  } else {
+    
+  }
 });
 
-app.get("/register", (req, res) => {
-  if (req.session["user_id"]) {
-    res.redirect("/urls");
+app.get('/register', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+    res.redirect('/urls');
   } else {
     let templateVars = {
-      user: (req.session["user_id"]),
+      user: (req.session['user_id']),
     };
     res.render('urls_register', templateVars);
   }
 });
 
-app.get("/u/:shortURL", (req, res) => {
+app.get('/u/:shortURL', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-    res.redirect(urlDatabase[req.params.shortURL].longURL);
+    if (req.session["visitor_id"]) {
+      urlDatabase[req.params.shortURL].addVisit(req.session["visitor_id"], new Date());
+      console.log("registered", urlDatabase[req.params.shortURL].visits.eachVisit);
+      res.redirect(urlDatabase[req.params.shortURL].longURL);
+    } else {
+      const newID = generateRandomString();
+      req.session["visitor_id"] = newID;
+      urlDatabase[req.params.shortURL].addUnique(newID);
+      urlDatabase[req.params.shortURL].addVisit(newID, new Date);
+      console.log("new", urlDatabase[req.params.shortURL]);
+      res.redirect(urlDatabase[req.params.shortURL].longURL);
+
+    }
   } else {
     res.send('URL not found. Create a new one pls');
   }
 });
 
-app.get("/login", (req, res) => {
-  if (req.session["user_id"]) {
-    res.redirect("/urls");
+app.get('/login', (req, res) => {
+  if (req.session['user_id'] && users[req.session['user_id'] ]) {
+    res.redirect('/urls');
   } else {
     let templateVars = {
-      user: users[req.session["user_id"]],
+      user: users[req.session['user_id']],
     };
     res.render('urls_login', templateVars);
   }
@@ -170,16 +181,16 @@ app.get("/login", (req, res) => {
 //                            DELETE PATHS
 // --------------------------------------------------------------------------------
 
-app.delete("/urls/:shortURL/delete", (req, res) => {
+app.delete('/urls/:shortURL/delete', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-    if (req.session["user_id"] === urlDatabase[req.params.shortURL].userID) {
+    if (req.session['user_id'] === urlDatabase[req.params.shortURL].userID) {
       delete urlDatabase[req.params.shortURL];
       res.redirect(`/urls`);
     } else {
-      res.send("Not a url you can delete");
+      res.send('Not a url you can delete');
     }
   } else {
-    res.send("URL cannot be deleted");
+    res.send('URL cannot be deleted');
   }
 });
 
@@ -188,13 +199,13 @@ app.delete("/urls/:shortURL/delete", (req, res) => {
 //                            PUT PATHS
 // --------------------------------------------------------------------------------
 
-app.put("/login", (req, res) => {
+app.put('/login', (req, res) => {
   const usr = getUserByEmail(users, req.body.email);
   if (!usr) {
     res.status(403);
     res.send('Invalid email');
   } else if (bcrypt.compareSync(req.body.password, users[usr].password)) {
-    req.session["user_id"] =  usr;
+    req.session['user_id'] =  usr;
     res.redirect('/urls');
   } else {
     res.status(403);
@@ -203,17 +214,14 @@ app.put("/login", (req, res) => {
 });
 
 // PUT for creating a new link object in urlDatabase
-app.put("/urls", (req, res) => {
+app.put('/urls', (req, res) => {
   const newID = generateRandomString();
-  urlDatabase[newID] = {
-    longURL: req.body.longURL,
-    userID: req.session["user_id"]
-  };
+  urlDatabase[newID] = new URL(req.body.longURL, req.session['user_id']);
   res.redirect(`/urls/${newID}`);
 });
 
-app.put("/register", (req, res) => {
-  if (req.body.email === "" || req.body.password === "") {
+app.put('/register', (req, res) => {
+  if (req.body.email === '' || req.body.password === '') {
     res.status(400);
     res.send('Invalid email or password');
   } else if (getUserByEmail(users, req.body.email)) {
@@ -223,23 +231,23 @@ app.put("/register", (req, res) => {
     const hashedPassword = bcrypt.hashSync(req.body.password,10); //Salt rounds of 10
     const usr = new User(req.body.email, hashedPassword);
     users[usr.id] = usr;
-    req.session["user_id"] =  usr.id;
+    req.session['user_id'] =  usr.id;
     res.redirect('/urls');
   }
 });
 
 
-app.put("/urls/:shortURL", (req, res) => {
-  if (req.session["user_id"] === urlDatabase[req.params.shortURL].userID) {
-    urlDatabase[req.params.shortURL] = req.body.longURL;
+app.put('/urls/:shortURL', (req, res) => {
+  if (req.session['user_id'] === urlDatabase[req.params.shortURL].userID) {
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
     res.redirect(`/urls`);
   } else {
-    res.send("Not a url you can edit");
+    res.send('Not a url you can edit');
   }
 });
 
-app.put("/logout", (req, res) => {
-  req.session = null;
+app.put('/logout', (req, res) => {
+  req.session["user_id"] = null;
   res.redirect('/urls');
 });
 
