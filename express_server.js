@@ -13,7 +13,7 @@ const methodOverride = require('method-override');
 const { getUserByEmail, urlsForUser, generateRandomString } = require('./helper');
 
 // Class Definition imports
-const { User, Visitor, URL } = require('./classes');
+const { User, URL } = require('./classes');
 
 // Initializing app with port
 const app = express();
@@ -36,7 +36,7 @@ app.use(methodOverride('_method'));
 // --------------------------------------------------------------------------------
 
 
-// Previous data structure of urlDatabase, left for reference if needed 
+// Previous data structure of urlDatabase, left for reference if needed
 // const urlDatabase = {
 //   'b2xVn2': 'http://www.lighthouselabs.ca',
 //   '9sm5xK': 'http://www.google.com'
@@ -251,7 +251,7 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
         err : {
           title : "Invalid URL",
           description : "URL does not exist in our database, please try with another URL."
-        }, 
+        },
         user : undefined
       };
       res.render('error', templateVars);
@@ -262,7 +262,7 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
       err : {
         title : "User Not Signed In",
         description : "Please sign in or register to access this page"
-      }, 
+      },
       user : undefined
     };
     res.render('error', templateVars);
@@ -287,7 +287,7 @@ app.put('/urls/:shortURL', (req, res) => {
         err : {
           title : "No Access to URL",
           description : "URL was created by another user. Cannot delete this URL."
-        }, 
+        },
         user : undefined
       };
       res.render('error', templateVars);
@@ -298,7 +298,7 @@ app.put('/urls/:shortURL', (req, res) => {
       err : {
         title : "User Not Signed In",
         description : "Please sign in or register to access this page"
-      }, 
+      },
       user : undefined
     };
     res.render('error', templateVars);
@@ -319,7 +319,7 @@ app.post('/login', (req, res) => {
       err : {
         title : "Invalid Email",
         description : "Email is not present in our database. Try again or register a new account"
-      }, 
+      },
       user : undefined
     };
     res.render('error', templateVars);
@@ -332,7 +332,7 @@ app.post('/login', (req, res) => {
       err : {
         title : "Invalid Password",
         description : "Password is incorrect. Try again"
-      }, 
+      },
       user : undefined
     };
     res.render('error', templateVars);
@@ -351,7 +351,7 @@ app.post('/urls', (req, res) => {
       err : {
         title : "User Not Signed In",
         description : "Please sign in or register to access this page"
-      }, 
+      },
       user : undefined
     };
     res.render('error', templateVars);
@@ -365,17 +365,17 @@ app.post('/register', (req, res) => {
       err : {
         title : "Invaid Input",
         description : "Email or password is invalid. Try again."
-      }, 
+      },
       user : undefined
     };
     res.render('error', templateVars);
-  } else if (getUserByEmail(users, req.body.email)) { 
+  } else if (getUserByEmail(users, req.body.email)) {
     res.status(400);
     let templateVars = {
       err : {
         title : "Invalid Email",
         description : "Email is already in our database. Login or register another account."
-      }, 
+      },
       user : undefined
     };
     res.render('error', templateVars);

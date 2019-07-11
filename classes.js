@@ -39,7 +39,6 @@ class URL {
 
 };
 
-
 // Class used to create new Users
 class User {
   constructor(email, password) {
@@ -49,11 +48,5 @@ class User {
   }
 };
 
-// Class for each unique visitor
-class Visitor {
-  constructor(id){
-    this.visitorId = id;
-  }
-};
 
-module.exports = { User, Visitor, URL };
+module.exports = { User, URL };
