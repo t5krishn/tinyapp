@@ -149,9 +149,10 @@ app.get('/urls/:shortURL', (req, res) => {
         let templateVars = {
           err : {
             title : "No Access to URL",
-            description : "This URL is not created by you, please create one or try with one you have created"
+            description : "This URL is not created by you, please create one or try with one you have created",
           },
-          user : undefined
+          user: users[req.session['user_id']]
+
         };
         res.render('error', templateVars);
       }
@@ -160,9 +161,9 @@ app.get('/urls/:shortURL', (req, res) => {
       let templateVars = {
         err : {
           title : "URL Not In Database",
-          description : "This URL is not in our database, please create one or try with a different one"
+          description : "This URL is not in our database, please create one or try with a different one",
         },
-        user : undefined
+        user: users[req.session['user_id']]
       };
       res.render('error', templateVars);
     }
@@ -210,7 +211,7 @@ app.get('/u/:shortURL', (req, res) => {
         title : "Invalid URL",
         description : "This URL is not in our database. Please create a new URL or try another"
       },
-      user : undefined
+      user: (req.session['user_id']) ? users[req.session['user_id']] : undefined
     };
     res.render('error', templateVars);
   }
@@ -262,7 +263,7 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
             title : "No Access to URL",
             description : "URL was created by another user. Cannot delete this URL."
           },
-          user : undefined
+          user: users[req.session['user_id']]
         };
         res.render('error', templateVars);
       }
@@ -273,7 +274,7 @@ app.delete('/urls/:shortURL/delete', (req, res) => {
           title : "Invalid URL",
           description : "URL does not exist in our database, please try with another URL."
         },
-        user : undefined
+        user : users[req.session['user_id']] 
       };
       res.render('error', templateVars);
     }
@@ -312,7 +313,8 @@ app.put('/urls/:shortURL', (req, res) => {
           title : "No Access to URL",
           description : "URL was created by another user. Cannot delete this URL."
         },
-        user : undefined
+        user : users[req.session['user_id']] 
+
       };
       res.render('error', templateVars);
     }
