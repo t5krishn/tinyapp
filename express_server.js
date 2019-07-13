@@ -179,7 +179,7 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 });
 
-
+// Redirecting from short url to long url
 app.get('/u/:shortURL', (req, res) => {
   // Checks if url exists in urldatabase
   if (urlDatabase[req.params.shortURL]) {
