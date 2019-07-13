@@ -1,6 +1,6 @@
 # TinyApp Project
 
-TinyApp is a web application built with Node and Express that allows users to shorten long URLs [Like https://tiny.cc/](https://tiny.cc/)
+TinyApp is a web application built with Node and Express that allows users to shorten long URLs. Similar to:[https://tiny.cc/](https://tiny.cc/)
 .
 
 ## Final Product
@@ -11,7 +11,7 @@ TinyApp is a web application built with Node and Express that allows users to sh
 
 ## Dependencies
 
-- Node.js: v8.9.4
+- Node.js: 8.9.4
 - Express: ^4.17.1
 - EJS: ^2.6.2
 - bcrypt: 2.0.0
