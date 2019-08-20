@@ -11,12 +11,12 @@
       
         <% if (!user) { %>
           
-        <div class="form-group nav-link clearfix">
-          <form class="form-inline pl-3" action="/register" style="position:absolute; right: 0%" method="GET">
+        <div class="form-group nav-link clearfix" style="position: absolute; right:0%; display: flex; flex-direction: row">
+          <form class="form-inline pl-3" action="/register" style="position: relative;" method="GET">
             <button type="submit" class="btn btn-outline-light" style="text-shadow: 1px 1px 2px black;">Register</button>
           </form>
 
-          <form class="form-inline pl-3" action="/login" style="position:absolute; right:7%" method="GET">
+          <form class="form-inline pl-3" action="/login" style="position:relative;" method="GET">
             <button type="submit" class="btn btn-outline-light" style="text-shadow: 1px 1px 2px black;">Sign in</button>
           </form>
         </div>
@@ -24,8 +24,8 @@
         <% } else { %>
           <form class="form-inline ml-auto pl-3" action="/logout" style="position:absolute; right:0" method="POST">
             <div class="form-group nav-link clearfix">
-              <label for="logout" class="ml-1 text-dark" style>User: <%= user.email %></label>
-              <button type="submit" name="logout" class="btn btn-outline-dark ml-1">Logout</button>
+              <label for="logout" class="ml-1 text-light" style>User: <%= user.email %></label>
+              <button type="submit" name="logout" class="btn btn-outline-light ml-1">Logout</button>
             </div>
           </form>
         <% } %>
